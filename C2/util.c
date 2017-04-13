@@ -119,6 +119,29 @@ bool hasK3(Graph * g, Color c){
   return FALSE;
 }
 
+bool hasK4(Graph * g, Color c){
+  int n = g->n;
+  for(int h = 0; h < n - 3; h++) {
+	  for(int i = h; i < n - 2; i++){
+		  for(int j = i + 1; j < n - 1; j++){
+		    for(int k = j + 1; k < n; k++){
+			    if(
+			      getEdgeColor(g, h, i) == c &&
+			      getEdgeColor(g, h, j) == c &&
+			      getEdgeColor(g, h, k) == c &&
+			      getEdgeColor(g, i, j) == c &&
+			      getEdgeColor(g, i, k) == c &&
+			      getEdgeColor(g, j, k) == c
+			    ){
+			      return TRUE;
+			    }
+		    }
+		  }
+	  }
+  }
+  return FALSE;
+}
+
 
 int main(){
   char b = 0;
