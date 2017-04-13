@@ -28,3 +28,8 @@ Color getEdgeColor(Graph * g, int m, int n);
 void printGraph(Graph * g);
 GraphList * getNextSize(Graph * g);
 Graph * copyGraph(Graph * g);
+
+int cmpfunc (const void * a, const void * b)
+{
+   return ( *(int*)a - *(int*)b );
+}
