@@ -15,6 +15,8 @@ int * getCharList(Graph * g){
     }
     *(charList + i) = reds;
   }
+  qsort(charList,g->n,sizeof(int),cmpfunc);
+  return charList;
 }
 
 void printGraph(Graph * g){
