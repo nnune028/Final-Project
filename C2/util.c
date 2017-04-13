@@ -118,6 +118,23 @@ bool hasK3(Graph * g, Color c){
   }
   return FALSE;
 }
+Graph * getSubGraph(Graph * inGraph, Color col){
+
+  Graph * outGraph = malloc(sizeof(*outGraph));
+  int i;
+  int n = inGraph->n;
+  outGraph->n = n;
+  int numEdges = n * (n - 1) / 2;
+
+  int k = 0;
+  for(i = 0; i < numEdges; i++){
+    if(*(inGraph->edges + i) == col){
+      *(outGraph->edges + k) = *(inGraph->edges + k); 
+      k++;
+    }
+  }
+  return outGraph;
+}
 
 
 int main(){
