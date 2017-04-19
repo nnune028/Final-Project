@@ -43,7 +43,7 @@ typedef struct Graph {
 */
 typedef struct GraphList {
   int size;
-  Graph ** graphs;
+  Graph *** graphs;
 } GraphList;
 
 

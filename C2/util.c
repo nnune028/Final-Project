@@ -77,6 +77,21 @@ Graph * createKn(int numVertices) {
 }
 
 /*
+  Returns a pointer to an initialized graphList that can store
+  numGraphs graphs
+*/
+GraphList * newGraphList(int numGraphs){
+  GraphList * gL = malloc(sizeof *gL);
+  gL->size = numGraphs;
+  gL->graphs = malloc(sizeof *(gL->graphs));
+  *(gL->graphs) = malloc(numGraphs * sizeof **(gL->graphs));
+  for(int i = 0; i < numGraphs; i++){
+    *(*(gL->graphs) + i) = malloc(sizeof **(*(gL->graphs) + i));
+    //printf("%u\n", *(gL->graphs) + i);
+  }
+  return gL;
+}
+/*
   Creates and returns a list of 2^n graphs, where n is the number of
   vertices in g. Each graph has a different combination of edge colors,
   which is why there are so many of them.
@@ -85,19 +100,17 @@ Graph * createKn(int numVertices) {
 GraphList * getNextSize(Graph * g){
   int i, j;
   int n = g->n;
-  GraphList * out = malloc(sizeof *out);
-  out->graphs = malloc( sizeof *(out->graphs));
-  *(out->graphs) = malloc(pow(2,n) * sizeof **(out->graphs));
+  GraphList * out = newGraphList(pow(2, n));
   for(i = 0; i < pow(2, n); i++){
-    Graph current = *(*(out->graphs) + i);
-    current = *copyGraph(g);
-    current.edges = realloc(current.edges, (n*(n+1)/2) * sizeof *(current.edges));
-    current.n += 1;
+    Graph * current = copyGraph(g);
+    current->edges = realloc(current->edges, (n*(n+1)/2) * sizeof *(current->edges));
+    current->n += 1;
     int k = i;
     for(j = n*(n-1)/2; j < n*(n+1)/2; j++){
-      *(current.edges + j) = (k&1) + 1;
+      *(current->edges + j) = (k&1) + 1;
       k = k>>1;
     }
+    *(*(out->graphs) + i) = current;
     //printGraph(&current);
   }
   return out;
@@ -255,7 +268,7 @@ bool isColorIso(Graph * g, Graph * h){
   duplicates. It also filters out any invalid graphs, which are
   graphs that have either a red K3 or a green K4.
   Currently broken.
-*/
+*//*
 void clean(GraphList * gL){
   int numGraphs = gL->size;
   int i = 0;
@@ -280,6 +293,7 @@ void clean(GraphList * gL){
   cleanedGraphs = realloc(gL->graphs, foundGraphs*sizeof(*cleanedGraphs));
 
 }
+*/
 /*
   Implements the bulk of the algorithm as described in the project proposal.
   Returns the smallest int n such that there are no valid colorings of Kn.
@@ -299,13 +313,14 @@ int run(){
 
 
 int main(){
+
   char b = 0;
   Graph * g = createKn(4);
   printGraph(g);
   GraphList * next = getNextSize(g);
   for(int i = 0; i < pow(2, g->n); i++){
-    printGraph((*(next->graphs) + i));
-    printf("%d", (*(next->graphs) + i)->n);
+    printGraph(*(*(next->graphs) + i));
+    printf("%d", (*(*(next->graphs) + i))->n);
   }
   return 0;
 }
