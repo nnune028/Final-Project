@@ -106,20 +106,6 @@ Color getEdgeColor(Graph * g, int n, int m){
   }
 }
 
-int numColorEdges (Graph * g, Color c, int vertex) {
-	
-	int counter = 0;
-	int numVertices = g->n;
-	
-	for (i = 0; i < numVertices; i++) {
-		if (getEdgeColor(g, vertex, i) == c) {
-			counter++;
-		}
-	}
-	
-	return counter;
-}
-
 //Example of not very good K3 checking, has to check n choose 3 combos
 //we can make an analogus one for checking for k4, we can probably
 //even make a general has Kn
@@ -140,6 +126,30 @@ bool hasK3(Graph * g, Color c){
   }
   return FALSE;
 }
+
+bool hasK4(Graph * g, Color c){
+  int n = g->n;
+  for(int h = 0; h < n - 3; h++) {
+	  for(int i = h + 1; i < n - 2; i++){
+		  for(int j = i + 1; j < n - 1; j++){
+		    for(int k = j + 1; k < n; k++){
+			    if(
+			      getEdgeColor(g, h, i) == c &&
+			      getEdgeColor(g, h, j) == c &&
+			      getEdgeColor(g, h, k) == c &&
+			      getEdgeColor(g, i, j) == c &&
+			      getEdgeColor(g, i, k) == c &&
+			      getEdgeColor(g, j, k) == c
+			    ){
+			      return TRUE;
+			    }
+		    }
+		  }
+	  }
+  }
+  return FALSE;
+}
+
 Graph * getSubGraph(Graph * inGraph, Color col){
 
   Graph * outGraph = malloc(sizeof(*outGraph));
