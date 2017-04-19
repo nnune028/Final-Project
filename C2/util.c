@@ -137,7 +137,7 @@ Graph * getSubGraph(Graph * inGraph, Color col){
   int k = 0;
   for(i = 0; i < numEdges; i++){
     if(*(inGraph->edges + i) == col){
-      *(outGraph->edges + k) = *(inGraph->edges + k); 
+      *(outGraph->edges + k) = *(inGraph->edges + i); 
       k++;
     }
   }
