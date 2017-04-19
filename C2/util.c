@@ -106,6 +106,20 @@ Color getEdgeColor(Graph * g, int n, int m){
   }
 }
 
+int numColorEdges (Graph * g, Color c, int vertex) {
+	
+	int counter = 0;
+	int numVertices = g->n;
+	
+	for (i = 0; i < numVertices; i++) {
+		if (getEdgeColor(g, vertex, i) == c) {
+			counter++;
+		}
+	}
+	
+	return counter;
+}
+
 //Example of not very good K3 checking, has to check n choose 3 combos
 //we can make an analogus one for checking for k4, we can probably
 //even make a general has Kn
