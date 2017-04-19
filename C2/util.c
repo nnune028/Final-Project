@@ -16,6 +16,10 @@ int * getCharList(Graph * g){
     }
     *(charList + i) = reds;
   }
+<<<<<<< HEAD
+=======
+  qsort(charList,g->n,sizeof(int),cmpfunc);
+>>>>>>> dd5de2e89e16eb48a77c9430af8c8b8f1889b760
   return charList;
 }
 
@@ -121,6 +125,23 @@ bool hasK3(Graph * g, Color c){
     }
   }
   return FALSE;
+}
+Graph * getSubGraph(Graph * inGraph, Color col){
+
+  Graph * outGraph = malloc(sizeof(*outGraph));
+  int i;
+  int n = inGraph->n;
+  outGraph->n = n;
+  int numEdges = n * (n - 1) / 2;
+
+  int k = 0;
+  for(i = 0; i < numEdges; i++){
+    if(*(inGraph->edges + i) == col){
+      *(outGraph->edges + k) = *(inGraph->edges + k); 
+      k++;
+    }
+  }
+  return outGraph;
 }
 
 bool isColorIso(Graph * g, Graph * h){
