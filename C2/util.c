@@ -4,6 +4,16 @@
 #include <math.h>
 #include <string.h>
 
+
+/*
+  Returns the characteristic list of a graph.
+  The characteristic list is a list with 1 number for each vertex,
+  and each number is how many red edges there are leaving that vertex.
+  Two graphs having the same characteristic list is a necessary but
+  not sufficient condition for them to be color isomorphic.
+
+  Remember to free this list when you're done with it!
+*/
 int * getCharList(Graph * g){
   int * charList = malloc(g->n * sizeof *charList);
   int i, j;
@@ -21,6 +31,10 @@ int * getCharList(Graph * g){
   return charList;
 }
 
+/*
+  Prints one half of the graph's adjacency matrix, to have a
+  human readable representation of the graph.
+*/
 void printGraph(Graph * g){
   int n = g->n;
   int i, j;
@@ -40,6 +54,13 @@ void printGraph(Graph * g){
   }
 }
 
+/*
+  Creates a pointer to a complete graph with numVertices vertices
+  and where every vertex is connected to every other vertex.
+  Note: Remember to free graphs when you are done using them to
+  avoid a memory leak.
+  See the destroyGraph().
+*/
 Graph * createKn(int numVertices) {
   int numEdges = numVertices * (numVertices - 1) / 2;
   Graph * Kn = malloc(sizeof(*Kn));
@@ -55,6 +76,12 @@ Graph * createKn(int numVertices) {
   return Kn;
 }
 
+/*
+  Creates and returns a list of 2^n graphs, where n is the number of
+  vertices in g. Each graph has a different combination of edge colors,
+  which is why there are so many of them.
+  Currently bugged. Generates the right graphs but cannot store them.
+*/
 GraphList * getNextSize(Graph * g){
   int i, j;
   int n = g->n;
@@ -76,6 +103,11 @@ GraphList * getNextSize(Graph * g){
   return out;
 }
 
+/*
+  This graphs returns a pointer to a new graph, identical to g.
+  Remember to call free this memory when you're done with it.
+  See destroyGraph().
+*/
 Graph * copyGraph(Graph * g){
   Graph * out = malloc(sizeof *out);
   int n = g->n;
@@ -87,11 +119,18 @@ Graph * copyGraph(Graph * g){
   return out;
 }
 
+/*
+  Frees not only the graph pointer but also its edge array.
+  Extremely important to avoid memory leaks.
+*/
 void destroyGraph(Graph * g){
   free(g->edges);
   free(g);
 }
 
+/*
+  Returns the color of the edge between vertices m and n.
+*/
 Color getEdgeColor(Graph * g, int n, int m){
   if( n == m ) {
     return NONE;
@@ -104,8 +143,11 @@ Color getEdgeColor(Graph * g, int n, int m){
   }
 }
 
+/*
+  Returns the number of edges in g adjacent to vertex that
+  are color c.
+*/
 int numColorEdges (Graph * g, Color c, int vertex) {
-
 	int counter = 0;
 	int numVertices = g->n;
 
@@ -118,9 +160,7 @@ int numColorEdges (Graph * g, Color c, int vertex) {
 	return counter;
 }
 
-//Example of not very good K3 checking, has to check n choose 3 combos
-//we can make an analogus one for checking for k4, we can probably
-//even make a general has Kn
+
 bool hasK3(Graph * g, Color c){
   int n = g->n;
   for(int i = 0; i < n - 2; i++){
@@ -138,6 +178,12 @@ bool hasK3(Graph * g, Color c){
   }
   return FALSE;
 }
+
+/*
+  Returns a graph with all the same vertices as inGraph but only with edges
+  that are color C.
+  Remember to free the subgraph when you're done!
+*/
 Graph * getSubGraph(Graph * inGraph, Color col){
 
   Graph * outGraph = malloc(sizeof(*outGraph));
@@ -156,14 +202,30 @@ Graph * getSubGraph(Graph * inGraph, Color col){
   return outGraph;
 }
 
+/*
+  Returns true if the two graphs are color isomorphic and false otherwise.
+  Currently not accurate.
+*/
 bool isColorIso(Graph * g, Graph * h){
-  if(memcmp(getCharList(g), getCharList(h), g->n) == 0){
+  int * charListG = getCharList(g);
+  int * charListH = getCharList(h);
+  int result = memcmp(charListG, charListH, g->n);
+  free(charListG);
+  free(charListH);
+  if(result == 0){
     return TRUE;
   }else{
     return FALSE;
   }
 }
 
+/*
+  Accepts a graphList and modifies it so that it contains only one
+  representative of each color isomorphism class. In other words, no
+  duplicates. It also filters out any invalid graphs, which are
+  graphs that have either a red K3 or a green K4.
+  Currently broken.
+*/
 void clean(GraphList * gL){
   int numGraphs = gL->size;
   int i = 0;
@@ -189,6 +251,11 @@ void clean(GraphList * gL){
 
 }
 /*
+  Implements the bulk of the algorithm as described in the project proposal.
+  Returns the smallest int n such that there are no valid colorings of Kn.
+  Currently WIP.
+*/
+/*
 int run(){
   int tiers = 10;
   GraphList * graphTiers = malloc(tiers * sizeof(*graphTiers));
@@ -199,6 +266,8 @@ int run(){
   }
 }
 */
+
+
 int main(){
   char b = 0;
   Graph * g = createKn(4);
