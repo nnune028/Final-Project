@@ -16,10 +16,8 @@ int * getCharList(Graph * g){
     }
     *(charList + i) = reds;
   }
-<<<<<<< HEAD
-=======
   qsort(charList,g->n,sizeof(int),cmpfunc);
->>>>>>> dd5de2e89e16eb48a77c9430af8c8b8f1889b760
+
   return charList;
 }
 
@@ -107,16 +105,16 @@ Color getEdgeColor(Graph * g, int n, int m){
 }
 
 int numColorEdges (Graph * g, Color c, int vertex) {
-	
+
 	int counter = 0;
 	int numVertices = g->n;
-	
-	for (i = 0; i < numVertices; i++) {
+
+	for (int i = 0; i < numVertices; i++) {
 		if (getEdgeColor(g, vertex, i) == c) {
 			counter++;
 		}
 	}
-	
+
 	return counter;
 }
 
@@ -151,7 +149,7 @@ Graph * getSubGraph(Graph * inGraph, Color col){
   int k = 0;
   for(i = 0; i < numEdges; i++){
     if(*(inGraph->edges + i) == col){
-      *(outGraph->edges + k) = *(inGraph->edges + i); 
+      *(outGraph->edges + k) = *(inGraph->edges + i);
       k++;
     }
   }
