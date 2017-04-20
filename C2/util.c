@@ -57,6 +57,13 @@ void printGraph(Graph * g){
   }}
 }
 
+
+void printGraphL(Graph * g){
+  for(int i = 0; i < g->n*(g->n - 1)/2; i++){
+    printf("%d", *(g->edges + i));
+  }
+  printf("\n");
+}
 /*
   Creates a pointer to a complete graph with numVertices vertices
   and where every vertex is connected to every other vertex.
@@ -254,9 +261,9 @@ Graph * getSubGraph(Graph * inGraph, Color col){
 */
 bool isColorIso(Graph * g, Graph * h){
   int * charListG = getCharList(g);
-
   int * charListH = getCharList(h);
-  int result = memcmp(charListG, charListH, g->n);
+
+  int result = memcmp(charListG, charListH, g->n*sizeof(int));
   free(charListG);
   free(charListH);
   if(result == 0){
@@ -280,13 +287,12 @@ void shrinkGraphList(GraphList * gL, int newSize){
 
 void destroyGraphList(GraphList * gL){
   for(int i = 0; i < gL->size; i++){
-    if((*(*gL->graphs + i))->isNull){
-      destroyGraph(*(*gL->graphs + i));
+    if(getGraph(gL, i)->isNull){
+      destroyGraph(getGraph(gL, i));
     }else{
-      free(*(*gL->graphs + i));
+      free(getGraph(gL, i));
     }
   }
-
   free(*gL->graphs);
   free(gL);
 }
@@ -298,24 +304,30 @@ void destroyGraphList(GraphList * gL){
   Currently broken.
 */
 void clean(GraphList * gL){
+  //printf("starting off with %d graphs\n", gL->size);
+  //printf("%d\n", getGraph(gL, 0)->isNull);
+
   int numGraphs = gL->size;
   int i = 0;
   int foundGraphs = 0;
   GraphList * cleanedGraphs = newGraphList(numGraphs);
   while(i < numGraphs){
-    if(!(*(*(gL->graphs) + i))->isNull){
-      printGraph(*(*gL->graphs + i));
+    if(!getGraph(gL, i)->isNull){
+      //printGraph(*(*gL->graphs + i));
       **(*cleanedGraphs->graphs + foundGraphs) = **(*gL->graphs + i);
       foundGraphs++;
+      //printf("Found another one\n");
       for(int j = numGraphs - 1; j > i; j--){
-        if(isColorIso(*(*gL->graphs + i), *(*gL->graphs + j))){
-          (*(*gL->graphs + j))->isNull = TRUE;
+        if(isColorIso(getGraph(gL, i), getGraph(gL, j))){
+          //printf("Were color iso %d %d\n", i, j);
+          getGraph(gL, j)->isNull = TRUE;
         }
       }
     }
     i++;
   }
   for(i = 0; i < foundGraphs; i++){
+    //printf("Set %d to a found graph\n", i);
     **(*gL->graphs + i) = **(*cleanedGraphs->graphs + i);
   }
 
@@ -324,34 +336,71 @@ void clean(GraphList * gL){
   gL->size = foundGraphs;
 }
 
+
+void mergeGraphLists(GraphList * gLA, GraphList * gLB){
+  GraphList * new = newGraphList(gLA->size + gLB->size);
+  for(int i = 0; i < gLA->size; i++){
+    setGraph(new, getGraph(gLA, i), i);
+  }
+  for(int i = gLA->size; i < gLA->size + gLB->size; i++){
+    setGraph(new, getGraph(gLB, i - gLA->size), i);
+  }
+  destroyGraphList(gLB);
+  //destroyGraphList(gLA);
+  // /free(*gLA->graphs);
+
+  *gLA->graphs = *new->graphs;
+  gLA->size = new->size;
+  //destroyGraphList(new);
+
+}
+
+
+void setGraph(GraphList * gL, Graph * g, int n){
+  **(*gL->graphs + n) = *g;
+  // /printf("isNull: %d\n", g->isNull);
+}
+
+
+Graph * getGraph(GraphList * gL, int n){
+  return *(*gL->graphs + n);
+}
 /*
   Implements the bulk of the algorithm as described in the project proposal.
   Returns the smallest int n such that there are no valid colorings of Kn.
   Currently WIP.
 */
-/*
-int run(){
-  int tiers = 10;
-  GraphList * graphTiers = malloc(tiers * sizeof(*graphTiers));
-  graphTiers->size = 1;
-  *(graphTiers->graphs) = *createKn(1);
-  for(int i = 0; i < tiers; i++){
 
+int run(){
+  int tiers = 9;
+  GraphList ** graphTiers = malloc(tiers * sizeof(*graphTiers));
+  *graphTiers = newGraphList(1);
+  **((*graphTiers)->graphs) = createKn(1);
+  for(int i = 1; i < tiers; i++){
+    *(graphTiers + i) = newGraphList(0);
+    for(int j = 0; j < (*(graphTiers + i - 1))->size; j++){
+      GraphList * gL = getNextSize(getGraph(*(graphTiers + i - 1), j));
+      //printf("%d has %d graphs raw\n", gL->size);
+      mergeGraphLists(*(graphTiers + i), gL);
+      //clean(*(graphTiers + i));
+      //printf("%d\n", gL->size);
+    }
+    printf("%d has %d graphs raw\n", i+1, (*(graphTiers + i))->size);
+    clean(*(graphTiers + i));
+    printf("%d has %d graphs cleaned\n",i+1, (*(graphTiers + i))->size);
+    printf("-------------------\n%d : %d\n", i + 1, (*(graphTiers + i))->size);
+
+    /*for(int k = 0; k < (*(graphTiers + i))->size; k++){
+      printf("Graph %d, %d:\n", i, k);
+      printGraph(getGraph(*(graphTiers + i), k));
+    }*/
   }
 }
-*/
+
 
 
 int main(){
 
-  char b = 0;
-  Graph * g = createKn(9);
-  printGraph(g);
-  GraphList * next = getNextSize(g);
-  clean(next);
-  for(int i = 0; i < next->size; i++){
-    printGraph(*(*(next->graphs) + i));
-    //printf("%d\n", (*(*(next->graphs) + i))->n);
-  }
+  run();
   return 0;
 }

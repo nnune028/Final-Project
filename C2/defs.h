@@ -49,6 +49,8 @@ typedef struct GraphList {
 
 
 //function headers
+void setGraph(GraphList * gL, Graph * g, int n);
+Graph * getGraph(GraphList * gL, int n);
 Graph * createKn(int n);
 void destroyGraphList(GraphList * gL);
 GraphList * getNextSize(Graph * g);
