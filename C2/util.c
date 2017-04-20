@@ -268,15 +268,19 @@ bool isColorIso(Graph * g, Graph * h){
 
 void shrinkGraphList(GraphList * gL, int newSize){
   for(int i = newSize; i < gL->size - 1; i++){
-    destroyGraph(*(*gL->graphs + i));
+    if((*(*gL->graphs + i))->isNull){
+      destroyGraph(*(*gL->graphs + i));
+    }else{
+      free(*(*gL->graphs + i));
+    }
   }
   gL->size = newSize;
   *gL->graphs = realloc(*gL->graphs, newSize * sizeof **gL->graphs);
 }
 
-void destroyGraphList(GraphList * gL, bool deleteGraphs){
+void destroyGraphList(GraphList * gL){
   for(int i = 0; i < gL->size; i++){
-    if(deleteGraphs){
+    if((*(*gL->graphs + i))->isNull){
       destroyGraph(*(*gL->graphs + i));
     }else{
       free(*(*gL->graphs + i));
@@ -300,7 +304,7 @@ void clean(GraphList * gL){
   GraphList * cleanedGraphs = newGraphList(numGraphs);
   while(i < numGraphs){
     if(!(*(*(gL->graphs) + i))->isNull){
-
+      printGraph(*(*gL->graphs + i));
       **(*cleanedGraphs->graphs + foundGraphs) = **(*gL->graphs + i);
       foundGraphs++;
       for(int j = numGraphs - 1; j > i; j--){
@@ -315,7 +319,7 @@ void clean(GraphList * gL){
     **(*gL->graphs + i) = **(*cleanedGraphs->graphs + i);
   }
 
-  destroyGraphList(cleanedGraphs, FALSE);
+  destroyGraphList(cleanedGraphs);
   shrinkGraphList(gL, foundGraphs);
   gL->size = foundGraphs;
 }
