@@ -251,6 +251,7 @@ Graph * getSubGraph(Graph * inGraph, Color col){
 */
 bool isColorIso(Graph * g, Graph * h){
   int * charListG = getCharList(g);
+
   int * charListH = getCharList(h);
   int result = memcmp(charListG, charListH, g->n);
   free(charListG);
@@ -262,38 +263,52 @@ bool isColorIso(Graph * g, Graph * h){
   }
 }
 
+void shrinkGraphList(GraphList * gL, int newSize){
+  for(int i = gL->size - 1; i >= newSize; i++){
+    destroyGraph(*(*gL->graphs + i));
+    free(*(*gL->graphs + i));
+  }
+  *gL->graphs = realloc(*gL->graphs, newSize * sizeof **gL->graphs);
+}
+
+void destroyGraphList(GraphList * gL){
+  shrinkGraphList(gL, 0);
+  free(gL);
+}
 /*
   Accepts a graphList and modifies it so that it contains only one
   representative of each color isomorphism class. In other words, no
   duplicates. It also filters out any invalid graphs, which are
   graphs that have either a red K3 or a green K4.
   Currently broken.
-*//*
+*/
 void clean(GraphList * gL){
   int numGraphs = gL->size;
   int i = 0;
   int foundGraphs = 0;
-  Graph ** cleanedGraphs = malloc(numGraphs*sizeof(*cleanedGraphs));
+  GraphList * cleanedGraphs = newGraphList(numGraphs);
   while(i < numGraphs){
-    if(!(*(gL->graphs) + i)->isNull){
+    if(!(*(*(gL->graphs) + i))->isNull){
 
-      *(*cleanedGraphs + foundGraphs) = *(*(gL->graphs) + i);
+      *(*cleanedGraphs->graphs + foundGraphs) = *(*gL->graphs + i);
       foundGraphs++;
-      for(int j = numGraphs; j > i; j--){
-        if(isColorIso(*(gL->graphs + i), *(gL->graphs + j))){
-          ((*(gL->graphs) + j))->isNull = TRUE;
+      for(int j = numGraphs - 1; j > i; j--){
+        if(isColorIso(*(*gL->graphs + i), *(*gL->graphs + j))){
+          (*(*gL->graphs + j))->isNull = TRUE;
         }
       }
     }
     i++;
   }
-  for(i = 0; i < numGraphs; i++){
-    *(gL->graphs + i) = *(cleanedGraphs + i);
+  for(i = 0; i < foundGraphs; i++){
+    *(*gL->graphs + i) = *(*cleanedGraphs->graphs + i);
   }
-  cleanedGraphs = realloc(gL->graphs, foundGraphs*sizeof(*cleanedGraphs));
+  gL->size = foundGraphs;
+  destroyGraphList(cleanedGraphs);
+  shrinkGraphList(gL, foundGraphs);
 
 }
-*/
+
 /*
   Implements the bulk of the algorithm as described in the project proposal.
   Returns the smallest int n such that there are no valid colorings of Kn.
@@ -315,12 +330,13 @@ int run(){
 int main(){
 
   char b = 0;
-  Graph * g = createKn(4);
+  Graph * g = createKn(5);
   printGraph(g);
   GraphList * next = getNextSize(g);
-  for(int i = 0; i < pow(2, g->n); i++){
+  clean(next);
+  for(int i = 0; i < next->size; i++){
     printGraph(*(*(next->graphs) + i));
-    printf("%d", (*(*(next->graphs) + i))->n);
+    printf("%d\n", (*(*(next->graphs) + i))->n);
   }
   return 0;
 }
