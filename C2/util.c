@@ -39,6 +39,9 @@ void printGraph(Graph * g){
   int n = g->n;
   int i, j;
   printf("  ");
+  if(n > 10){
+    printf("Uh oh n is %d\n", n);
+  }else{
   for(i = 0; i < n; i++){
     printf("%d ", i);
   }
@@ -51,7 +54,7 @@ void printGraph(Graph * g){
     }
     printf("\n");
     i++;
-  }
+  }}
 }
 
 /*
@@ -264,15 +267,23 @@ bool isColorIso(Graph * g, Graph * h){
 }
 
 void shrinkGraphList(GraphList * gL, int newSize){
-  for(int i = gL->size - 1; i >= newSize; i++){
+  for(int i = newSize; i < gL->size - 1; i++){
     destroyGraph(*(*gL->graphs + i));
-    free(*(*gL->graphs + i));
   }
+  gL->size = newSize;
   *gL->graphs = realloc(*gL->graphs, newSize * sizeof **gL->graphs);
 }
 
-void destroyGraphList(GraphList * gL){
-  shrinkGraphList(gL, 0);
+void destroyGraphList(GraphList * gL, bool deleteGraphs){
+  for(int i = 0; i < gL->size; i++){
+    if(deleteGraphs){
+      destroyGraph(*(*gL->graphs + i));
+    }else{
+      free(*(*gL->graphs + i));
+    }
+  }
+
+  free(*gL->graphs);
   free(gL);
 }
 /*
@@ -290,7 +301,7 @@ void clean(GraphList * gL){
   while(i < numGraphs){
     if(!(*(*(gL->graphs) + i))->isNull){
 
-      *(*cleanedGraphs->graphs + foundGraphs) = *(*gL->graphs + i);
+      **(*cleanedGraphs->graphs + foundGraphs) = **(*gL->graphs + i);
       foundGraphs++;
       for(int j = numGraphs - 1; j > i; j--){
         if(isColorIso(*(*gL->graphs + i), *(*gL->graphs + j))){
@@ -301,12 +312,12 @@ void clean(GraphList * gL){
     i++;
   }
   for(i = 0; i < foundGraphs; i++){
-    *(*gL->graphs + i) = *(*cleanedGraphs->graphs + i);
+    **(*gL->graphs + i) = **(*cleanedGraphs->graphs + i);
   }
-  gL->size = foundGraphs;
-  destroyGraphList(cleanedGraphs);
-  shrinkGraphList(gL, foundGraphs);
 
+  destroyGraphList(cleanedGraphs, FALSE);
+  shrinkGraphList(gL, foundGraphs);
+  gL->size = foundGraphs;
 }
 
 /*
@@ -330,13 +341,13 @@ int run(){
 int main(){
 
   char b = 0;
-  Graph * g = createKn(5);
+  Graph * g = createKn(9);
   printGraph(g);
   GraphList * next = getNextSize(g);
   clean(next);
   for(int i = 0; i < next->size; i++){
     printGraph(*(*(next->graphs) + i));
-    printf("%d\n", (*(*(next->graphs) + i))->n);
+    //printf("%d\n", (*(*(next->graphs) + i))->n);
   }
   return 0;
 }

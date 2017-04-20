@@ -50,7 +50,7 @@ typedef struct GraphList {
 
 //function headers
 Graph * createKn(int n);
-void destroyGraphList(GraphList * gL);
+void destroyGraphList(GraphList * gL, bool b);
 GraphList * getNextSize(Graph * g);
 int * getCharList(Graph * g);
 Graph * getSubgraph(Color c);
