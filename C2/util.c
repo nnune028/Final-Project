@@ -166,66 +166,75 @@ Color getEdgeColor(Graph * g, int n, int m){
   }
 }
 
+bool * hasNMinusOneEdges (Graph * g, Color c, int n) {
+  int numVertices = g->n;
+  bool * hasEnoughEdges = malloc (numVertices * sizeof(bool));
+  for (int i = 0; i < numVertices; i++) {
+    if (numColorEdges (g, c, i) >= n - 1) {
+      *(hasEnoughEdges+i) = TRUE;
+    }
+    else {
+      *(hasEnoughEdges+i) = FALSE;
+    }
+  }
+  return hasEnoughEdges;
+}
+
 /*
   Returns the number of edges in g adjacent to vertex that
   are color c.
 */
-int numColorEdges (Graph * g, Color c, int vertex) {
-	int counter = 0;
-	int numVertices = g->n;
-
-	for (int i = 0; i < numVertices; i++) {
-		if (getEdgeColor(g, vertex, i) == c) {
-			counter++;
-		}
-	}
-
-	return counter;
-}
-
-
 bool hasK3(Graph * g, Color c){
   int n = g->n;
+  bool * hasEnoughEdges = hasNMinusOneEdges(g, c, 3);
+  
   for(int i = 0; i < n - 2; i++){
-    if(numColorEdges(g, c, i) >= 2) {
+    if( *(hasEnoughEdges+i) == TRUE) {
       for(int j = i + 1; j < n - 1; j++){
-        for(int k = j + 1; k < n; k++){
-          if(
-            getEdgeColor(g, i, j) == c &&
-            getEdgeColor(g, j, k) == c &&
-            getEdgeColor(g, i, k) == c
-          ){
-            return TRUE;
-          }
-        }
+	if( *(hasEnoughEdges+j) == TRUE) {
+	  for(int k = j + 1; k < n; k++){
+	    if(
+	      *(hasEnoughEdges+k) == TRUE  &&
+	      getEdgeColor(g, i, j) == c &&
+	      getEdgeColor(g, j, k) == c &&
+	      getEdgeColor(g, i, k) == c
+	    ){
+	      return TRUE;
+	    }
+	  }
+	}
       }
     }
   }
   return FALSE;
 }
 
-
-
-
 bool hasK4(Graph * g, Color c){
   int n = g->n;
+  bool * hasEnoughEdges = hasNMinusOneEdges(g, c, 4);
+  
   for(int h = 0; h < n - 3; h++) {
-    if(numColorEdges(g, c, h) >= 3) {
+    if( *(hasEnoughEdges+h) == TRUE) {
       for(int i = h + 1; i < n - 2; i++){
-        for(int j = i + 1; j < n - 1; j++){
-	         for(int k = j + 1; k < n; k++){
-	            if(
-                 getEdgeColor(g, h, i) == c &&
-	               getEdgeColor(g, h, j) == c &&
-                 getEdgeColor(g, h, k) == c &&
-	               getEdgeColor(g, i, j) == c &&
-                 getEdgeColor(g, i, k) == c &&
-	               getEdgeColor(g, j, k) == c
-	              ){
-                 return TRUE;
-	            }
-            }
-	       }
+	if( *(hasEnoughEdges+i) == TRUE) {
+	  for(int j = i + 1; j < n - 1; j++){
+	    if( *(hasEnoughEdges+j) == TRUE) {
+	      for(int k = j + 1; k < n; k++){
+	        if(
+		  *(hasEnoughEdges+k) == TRUE  &&
+		  getEdgeColor(g, h, i) == c &&
+		  getEdgeColor(g, h, j) == c &&
+		  getEdgeColor(g, h, k) == c &&
+		  getEdgeColor(g, i, j) == c &&
+		  getEdgeColor(g, i, k) == c &&
+		  getEdgeColor(g, j, k) == c
+	        ){
+		  return TRUE;
+		}
+	      }
+	    }
+	  }
+	}
       }
     }
   }
