@@ -7,6 +7,12 @@ typedef enum bool {
   FALSE = 0, TRUE = 1
 } bool;
 
+
+typedef struct Cell {
+  int value;
+  int size;
+  struct Cell * next;
+} Cell;
 /*
   The color of an edge. NONE means no edge.
 */

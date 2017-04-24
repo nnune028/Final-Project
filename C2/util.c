@@ -8,6 +8,7 @@
 int memUsage = 0;
 int memFreed = 0;
 bool debug = FALSE;
+
 void dumpMallinfo(){
   struct mallinfo m = mallinfo();
   printf("used kbytes = %.3f\n", m.uordblks/1000.0);
@@ -34,7 +35,7 @@ int * getCharList(Graph * g){
     }
     *(charList + i) = reds;
   }
-  qsort(charList,g->n,sizeof(int),cmpfunc);
+  //qsort(charList,g->n,sizeof(int),cmpfunc);
 
   return charList;
 }
@@ -195,6 +196,15 @@ Color getEdgeColor(Graph * g, int n, int m){
     return *(g->edges + base + n);
   }
 }
+void setEdgeColor(Graph * g, int n, int m, Color c){
+  if (n > m){
+    int base = n*(n-1)/2;
+    *(g->edges + base + m) = c;
+  }else{
+    int base = m*(m-1)/2;
+    *(g->edges + base + n) = c;
+  }
+}
 
 /*
   Returns the number of edges in g adjacent to vertex that
@@ -281,20 +291,275 @@ Graph * getSubGraph(Graph * inGraph, Color col){
   return outGraph;
 }
 
+void freeList(Cell * list){
+  Cell * current = list;
+  Cell * next;
+  while(current->next != NULL){
+    next = current->next;
+    free(current);
+    current = next;
+  }
+  free(current);
+}
+void printList(Cell * list){
+  Cell * current = list;
+  printf("[");
+  while(current->next != NULL){
+    printf("%d ", current->value);
+    current = current->next;
+  }
+  if(current->size == 1) printf("%d]\n", current->value );
+  else printf("]\n");
+}
+
+void addToList(Cell * list, int val){
+  Cell * current = list;
+  while(current -> next != NULL){
+    current->size++;
+    current = current->next;
+  }
+  current->size++;
+  current->next = malloc(sizeof *current->next);
+  current = current->next;
+  current->size = 1;
+  current->next = NULL;
+  current->value = val;
+}
+
+int fact(int n){
+  int t = 1;
+  for(int  i = 2; i <= n; i++){
+    t *= i;
+  }
+  return t;
+}
+
+Cell * decToFact(int n, int dig){
+  int temp[dig];
+  int num = n;
+  Cell * ans = malloc(sizeof *ans);
+  ans->size = 0;
+  ans->next = NULL;
+  ans->value = -1;
+  for(int i = 0; i < dig; i++){
+    //printf("%d / %d = %d remainder %d\n", num, i + 1, num/(i+1), num % (i+1));
+    temp[i] = num % (i+1);
+    num /= (i+1);
+  }
+  for(int i = dig-1; i >= 0; i--){
+    addToList(ans, temp[i]);
+  }
+
+  Cell * real = ans->next;
+  free(ans);
+  return real;
+}
+
+Cell * copyList(Cell * list){
+  Cell * t = calloc(1, sizeof *t);
+  Cell * current = list;
+  while(current->next != NULL){
+    addToList(t, current->value);
+    current = current->next;
+
+  }
+  addToList(t, current->value);
+  Cell * ans = t->next;
+  free(t);
+  return ans;
+}
+int getListIndex(Cell * list, int n){
+  Cell * current = list;
+  while(list->size - current->size != n){
+    current = current->next;
+  }
+  return current->value;
+}
+Cell* getListCellIndex(Cell * list, int n){
+  Cell * current = list;
+  while(list->size - current->size != n){
+    current = current->next;
+  }
+  return current;
+}
+Cell ** copyListArray(Cell *array[], int n){
+  Cell **t = calloc(n, sizeof *t);
+  for(int i = 0; i < n; i++){
+    t[i] = array[i];
+  }
+  return t;
+}
+Cell * permuteList(Cell * list, Cell * perm){
+  //printf("--permuting vertices\n");
+  Cell * t = calloc(1, sizeof(t));
+  Cell * current = perm;
+  Cell * copy = copyList(list);
+  //printf("beginning loop\n");
+  while(current->next != NULL){
+    int address = current->value;
+    //printf("getting address %d\n", address);
+    addToList(t, getListIndex(copy, address));
+    if(address == 0){
+      if(copy->next != NULL){
+        Cell* toFree = copy;
+        copy = copy->next;
+        free(toFree);
+      }else{
+        free(copy);
+      }
+    }else if(address == copy->size - 1){
+      getListCellIndex(copy, address-1)->next=NULL;
+    }else{
+      getListCellIndex(copy, address-1)->next = getListCellIndex(copy, address+1);
+    }
+    current = current->next;
+  }
+  addToList(t, getListIndex(copy,current->value));
+  Cell * ans = t->next;
+  free(t);
+  return ans;
+}
+int * collapseVerts(Cell ** verts, int n){
+  //printf("expecting %d\n", n);
+  int * t = malloc(n * sizeof(int));
+  int found = 0;
+  for(int i = 0; i < n; i++){
+    //printf("looking at row %d ", i);
+    Cell * current = verts[i];
+    //printList(current);
+    //printf("got row\n");
+    if(current->size > 0){
+      while(current->next != NULL){
+        t[found] = current->value;
+        found++;
+        current = current->next;
+      }
+      t[found] = current->value;
+      found++;
+      //printf("found 1\n");
+    }
+  }
+  return t;
+}
+bool recIsoCheck(Cell *vertsG[], Cell *vertsH[], int depth, Graph * g, Graph * h){
+  printf("depth = %d / %d\n", depth, g->n-1);
+  if(depth >= g->n-1){
+    //base case
+    for(int i = 0; i < g->n; i++){
+      //printf("row %d: ", i);
+      //printList(vertsG[i]);
+    }
+    int * gList = collapseVerts(vertsG, g->n);
+    int * hList = collapseVerts(vertsH, h->n);
+    for (int i = 0; i < g->n; i++) {
+      printf("%d ", gList[i]);
+    }
+    printf("\n");
+    for (int i = 0; i < g->n; i++) {
+      printf("%d ", hList[i]);
+    }
+    printf("\ncollapsed lists\n");
+    printf("G: (%d) \n", g->n);
+    printGraph(g);
+    printf("H: (%d) \n", h->n);
+    printGraph(h);
+    for(int i = 0; i < g->n-1; i++){
+      for(int j = i + 1; j < g->n; j++){
+        printf("gonna check edge between %d %d\n", i, j);
+        printf("%d and %d in g, %d and %d in h\n", gList[i], gList[j], hList[i], hList[j]);
+        if(getEdgeColor(g, gList[i], gList[j]) != getEdgeColor(h, hList[i], hList[j])){
+          printf("gonna free something %d %d\n", i, j);
+          free(gList);
+          free(hList);
+          return FALSE;
+        }
+      }
+    }
+    //printf("gonna free outside loop\n");
+    free(gList);
+    free(hList);
+    return TRUE;
+  }else{
+    if(vertsG[depth]->size > 0){
+      //printf("currently looking at ");
+      //printList(vertsG[depth]);
+      for(int i = 0; i < fact(vertsG[depth]->size); i++){
+        //printf("i = %d\n", i);
+        Cell * perm = decToFact(i, vertsG[depth]->size);
+        //printf("generated perm list ");
+        //printList(perm);
+        Cell * permVertsG = permuteList(vertsG[depth], perm);
+        //printf("permuted vertices.. ");
+        //printList(permVertsG);
+        Cell **copy = copyListArray(vertsG, g->n);
+        //printf("copied verts...\n");
+        copy[depth] = permVertsG;
+        //printf("entering recursive call...\n");
+        if(recIsoCheck(copy, vertsH, depth + 1, g, h)){
+          printf("about to free perm\n");
+          freeList(perm);
+          printf("freed perm\n");s
+          freeList(permVertsG);
+          printf("freed permVertsG\n");
+          //freeList(*copy);
+          return TRUE;
+        }
+      }
+      return FALSE;
+    }else{
+      return recIsoCheck(vertsG, vertsH, depth + 1, g, h);
+
+    }
+  }
+}
+
 /*
   Returns true if the two graphs are color isomorphic and false otherwise.
   Currently not accurate.
 */
 bool isColorIso(Graph * g, Graph * h){
+  printf("starting the isomorphism checking process\n");
   int * charListG = getCharList(g);
+  int * charListGSorted = getCharList(g);
   int * charListH = getCharList(h);
-
-  int result = memcmp(charListG, charListH, g->n*sizeof(int));
-  free(charListG);
+  int * charListHSorted = getCharList(h);
+  int n = g->n;
+  qsort(charListGSorted,n,sizeof(int),cmpfunc);
+  qsort(charListHSorted,n,sizeof(int),cmpfunc);
+  Cell * vertsG[n];
+  Cell * vertsH[n];
+  int result = memcmp(charListGSorted, charListHSorted, n*sizeof(int));
+  free(charListGSorted);
   memFreed += g->n * sizeof(int);
-  free(charListH);
+  free(charListHSorted);
+
   if(result == 0){
-    return TRUE;
+      printf("--------------------\n");
+
+      for(int i = 0; i < n; i++){
+        vertsG[i] = calloc(1, sizeof *vertsG[i]);
+        vertsH[i] = calloc(1, sizeof *vertsH[i]);
+      }
+      for(int i = 0 ; i < n; i++){
+        addToList(vertsG[charListG[i]], i);
+        addToList(vertsH[charListH[i]], i);
+      }
+      for(int i = 0; i < n; i++){
+        if (vertsG[i]->next != NULL) {
+          vertsG[i] = vertsG[i]->next;
+          //printf("G: ");
+          //printList(vertsG[i]);
+        }
+        if (vertsH[i]->next != NULL) {
+          vertsH[i] = vertsH[i]->next;
+          //printf("                   H: ");
+          //printList(vertsH[i]);
+        }
+      }
+      printf("entering recursive function\n");
+      return recIsoCheck(vertsG, vertsH, 0, g, h);
+            printf("climbed out of recursive function\n");
+
   }else{
     return FALSE;
   }
@@ -326,7 +591,7 @@ void destroyGraphList(GraphList * gL){
     //printf("destroy checking %p\n", getGraph(gL, i));
     if(!(getGraph(gL, i) == NULL)){
       if(getGraph(gL, i)->isNull){
-        printf("-----------destroyed a graph %p\n", getGraph(gL, i));
+        //printf("-----------destroyed a graph %p\n", getGraph(gL, i));
         destroyGraph(getGraph(gL, i));
 
       }
@@ -357,18 +622,20 @@ void clean(GraphList * gL){
   int foundGraphs = 0;
   //printf("doing it in clean\n");
   GraphList * cleanedGraphs = newGraphList(numGraphs);
-  //printf("about to start checking isos\n");
+  printf("about to start checking isos\n");
   while(i < numGraphs){
 
     Graph * current = getGraph(gL, i);
-    //printf("got graph %d out of %lu\n", i, numGraphs);
+    printf("got graph %d out of %lu\n", i, numGraphs);
     if(!current->isNull){
       //printGraph(*(*gL->graphs + i));
       //**(*cleanedGraphs->graphs + foundGraphs) = **(*gL->graphs + i);
       //foundGraphs++;
-      //printf("comparing to others..\n");
+      printf("comparing to others..\n");
       for(int j = numGraphs - 1; j > i; j--){
+        printf("comparing to %d\n", j);
         Graph * other = getGraph(gL, j);
+        printf("got other\n");
         if(!other->isNull){
           if(isColorIso(current, other)){
             //printf("Were color iso %d %d\n", i, j);
@@ -379,7 +646,7 @@ void clean(GraphList * gL){
     }
     i++;
   }
-  //printf("Done checking color isomorphism in clean\n");
+  printf("Done checking color isomorphism in clean\n");
   i=0;
 
   while(i < numGraphs){
@@ -400,7 +667,7 @@ void clean(GraphList * gL){
     }
     i++;
   }
-  //printf("done cheking for complete subgraphs\n");
+  printf("done cheking for complete subgraphs\n");
   for(i = 0; i < foundGraphs; i++){
     //printf("Set %d to a found graph\n", i);
     *(*gL->graphs + i) = *(*cleanedGraphs->graphs + i);
@@ -456,7 +723,7 @@ Graph * getGraph(GraphList * gL, int n){
 int run(){
   printf("starting mem usage:\n");
   dumpMallinfo;
-  int tiers = 10;
+  int tiers = 7;
   GraphList ** graphTiers = mallocDB(tiers * sizeof(*graphTiers), "run, **graphTiers");
   dumpMallinfo;
   printf("Generating First GraphList\n");
@@ -496,10 +763,10 @@ int run(){
     dumpMallinfo();
     printf("-------------------\n%d : %d\n", i + 1, (*(graphTiers + i))->size);
 
-    /*for(int k = 0; k < (*(graphTiers + i))->size; k++){
+    for(int k = 0; k < (*(graphTiers + i))->size; k++){
       printf("Graph %d, %d:\n", i, k);
       printGraph(getGraph(*(graphTiers + i), k));
-    }*/
+    }
   }
 }
 
@@ -508,5 +775,6 @@ int run(){
 int main(){
 
   run();
+
   return 0;
 }
