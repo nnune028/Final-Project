@@ -498,7 +498,7 @@ bool recIsoCheck(Cell *vertsG[], Cell *vertsH[], int depth, Graph * g, Graph * h
         if(recIsoCheck(copy, vertsH, depth + 1, g, h)){
           printf("about to free perm\n");
           freeList(perm);
-          printf("freed perm\n");s
+          printf("freed perm\n");
           freeList(permVertsG);
           printf("freed permVertsG\n");
           //freeList(*copy);
