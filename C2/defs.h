@@ -49,6 +49,7 @@ typedef struct GraphList {
 
 
 //function headers
+void * mallocDB(int bytes, char * id);
 void setGraph(GraphList * gL, Graph * g, int n);
 Graph * getGraph(GraphList * gL, int n);
 Graph * createKn(int n);
@@ -60,7 +61,8 @@ Color getEdgeColor(Graph * g, int m, int n);
 void printGraph(Graph * g);
 GraphList * getNextSize(Graph * g);
 Graph * copyGraph(Graph * g);
-
+bool hasK3(Graph * g, Color c);
+bool hasK4(Graph * g, Color c);
 int cmpfunc (const void * a, const void * b)
 {
    return ( *(int*)a - *(int*)b );
