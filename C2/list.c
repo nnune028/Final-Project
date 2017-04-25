@@ -50,15 +50,19 @@ Cell * copyList(Cell * list){
 }
 int getListIndex(Cell * list, int n){
   Cell * current = list;
-  while(list->size - current->size != n){
+  int i = 0;
+  while(i != n){
     current = current->next;
+    i++;
   }
   return current->value;
 }
 Cell* getListCellIndex(Cell * list, int n){
   Cell * current = list;
-  while(list->size - current->size != n){
+  int i = 0;
+  while(i != n){
     current = current->next;
+    i++;
   }
   return current;
 }
@@ -69,28 +73,40 @@ Cell ** copyListArray(Cell *array[], int n){
   }
   return t;
 }
+
 Cell * permuteList(Cell * list, Cell * perm){
   //printf("--permuting vertices\n");
   Cell * t = calloc(1, sizeof(t));
   Cell * current = perm;
   Cell * copy = copyList(list);
   //printf("beginning loop\n");
+  int copySize = copy->size;
   while(current->next != NULL){
+    //printf("current t: ");
+    //printList(t);
+    //printf("current copy: (%d) ", copySize);
+    //printList(copy);
     int address = current->value;
     //printf("getting address %d\n", address);
     addToList(t, getListIndex(copy, address));
+    //printf("removing vertex\n");
     if(address == 0){
+
       if(copy->next != NULL){
+
         Cell* toFree = copy;
         copy = copy->next;
+        copySize--;
         free(toFree);
       }else{
         free(copy);
       }
-    }else if(address == copy->size - 1){
+    }else if(address == copySize - 1){
       getListCellIndex(copy, address-1)->next=NULL;
+      copySize--;
     }else{
       getListCellIndex(copy, address-1)->next = getListCellIndex(copy, address+1);
+      copySize--;
     }
     current = current->next;
   }
