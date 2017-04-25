@@ -45,15 +45,15 @@ GraphList * getNextSize(Graph * g){
 
 bool hasK3(Graph * g, Color c){
   int n = g->n;
-  bool * hasEnoughEdges = hasNMinusOneEdges(g, c, 3);
+  int * numEdges = getCharList(g, c);
 
   for(int i = 0; i < n - 2; i++){
-    if( *(hasEnoughEdges+i) == TRUE) {
+    if( *(numEdges+i) >= 2) {
       for(int j = i + 1; j < n - 1; j++){
-	       if( *(hasEnoughEdges+j) == TRUE) {
+	       if( *(numEdges+j) >= 2) {
 	          for(int k = j + 1; k < n; k++){
 	             if(
-	                *(hasEnoughEdges+k) == TRUE  &&
+	                *(numEdges+k) >= 2  &&
 	                 getEdgeColor(g, i, j) == c &&
 	                  getEdgeColor(g, j, k) == c &&
 	                   getEdgeColor(g, i, k) == c
@@ -70,17 +70,17 @@ bool hasK3(Graph * g, Color c){
 
 bool hasK4(Graph * g, Color c){
   int n = g->n;
-  bool * hasEnoughEdges = hasNMinusOneEdges(g, c, 4);
+  int * numEdges = getCharList(g, c);
 
   for(int h = 0; h < n - 3; h++) {
-    if( *(hasEnoughEdges+h) == TRUE) {
+    if( *(numEdges+h) >= 3) {
       for(int i = h + 1; i < n - 2; i++){
-	if( *(hasEnoughEdges+i) == TRUE) {
+	if( *(numEdges+i) >= 3) {
 	  for(int j = i + 1; j < n - 1; j++){
-	    if( *(hasEnoughEdges+j) == TRUE) {
+	    if( *(numEdges+j) >= 3) {
 	      for(int k = j + 1; k < n; k++){
 	        if(
-		  *(hasEnoughEdges+k) == TRUE  &&
+		  *(numEdges+k) >= 3  &&
 		  getEdgeColor(g, h, i) == c &&
 		  getEdgeColor(g, h, j) == c &&
 		  getEdgeColor(g, h, k) == c &&
