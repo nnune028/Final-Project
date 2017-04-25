@@ -8,18 +8,18 @@
 
   Remember to free this list when you're done with it!
 */
-int * getCharList(Graph * g){
+int * getCharList(Graph * g, Color c){
   int * charList = mallocDB(g->n * sizeof *charList, "getCharList");
 
   int i, j;
   for(i = 0; i < g->n; i++){
-    int reds = 0;
+    int colorEdges = 0;
     for(j = 0; j < g->n; j++){
-      if(getEdgeColor(g, i, j) == RED){
-        reds++;
+      if(getEdgeColor(g, i, j) == c){
+        colorEdges++;
       }
     }
-    *(charList + i) = reds;
+    *(charList + i) = colorEdges;
   }
   //qsort(charList,g->n,sizeof(int),cmpfunc);
 
@@ -163,20 +163,6 @@ void setEdgeColor(Graph * g, int n, int m, Color c){
     int base = m*(m-1)/2;
     *(g->edges + base + n) = c;
   }
-}
-
-bool * hasNMinusOneEdges (Graph * g, Color c, int n) {
-  int numVertices = g->n;
-  bool * hasEnoughEdges = malloc (numVertices * sizeof(bool));
-  for (int i = 0; i < numVertices; i++) {
-    if (numColorEdges (g, c, i) >= n - 1) {
-      *(hasEnoughEdges+i) = TRUE;
-    }
-    else {
-      *(hasEnoughEdges+i) = FALSE;
-    }
-  }
-  return hasEnoughEdges;
 }
 
 /*
