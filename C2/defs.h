@@ -61,6 +61,7 @@ typedef struct GraphList {
 //function headers
 //list.c
 void freeList(Cell * list);
+void freeListArray(Cell ** listArray, int n);
 void printList(Cell * list);
 void addToList(Cell * list, int val);
 Cell * copyList(Cell * list);

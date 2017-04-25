@@ -1,4 +1,6 @@
 #include "defs.h"
+
+
 void freeList(Cell * list){
   Cell * current = list;
   Cell * next;
@@ -8,6 +10,14 @@ void freeList(Cell * list){
     current = next;
   }
   free(current);
+}
+void freeListArray(Cell ** listArray, int n){
+
+  for(int i = 0; i < n ; i++){
+    freeList(listArray[i]);
+  }
+  free(listArray);
+
 }
 void printList(Cell * list){
   Cell * current = list;
@@ -38,15 +48,21 @@ void addToList(Cell * list, int val){
 Cell * copyList(Cell * list){
   Cell * t = calloc(1, sizeof *t);
   Cell * current = list;
-  while(current->next != NULL){
+  if(current->size > 0){
+    while(current->next != NULL){
+      addToList(t, current->value);
+      current = current->next;
+    }
     addToList(t, current->value);
-    current = current->next;
-
+    Cell * ans = t->next;
+    free(t);
+    return ans;
+  }else{
+    t->size = 0;
+    t->value = -1;
+    t->next = NULL;
+    return t;
   }
-  addToList(t, current->value);
-  Cell * ans = t->next;
-  free(t);
-  return ans;
 }
 int getListIndex(Cell * list, int n){
   Cell * current = list;
@@ -69,13 +85,14 @@ Cell* getListCellIndex(Cell * list, int n){
 Cell ** copyListArray(Cell *array[], int n){
   Cell **t = calloc(n, sizeof *t);
   for(int i = 0; i < n; i++){
-    t[i] = array[i];
+    //printList(array[i]);
+    t[i] = copyList(array[i]);
   }
   return t;
 }
 
 Cell * permuteList(Cell * list, Cell * perm){
-  //printf("--permuting vertices\n");
+
   Cell * t = calloc(1, sizeof(t));
   Cell * current = perm;
   Cell * copy = copyList(list);
@@ -102,16 +119,22 @@ Cell * permuteList(Cell * list, Cell * perm){
         free(copy);
       }
     }else if(address == copySize - 1){
+      free(getListCellIndex(copy, address));
       getListCellIndex(copy, address-1)->next=NULL;
       copySize--;
     }else{
+      Cell * temp = getListCellIndex(copy, address);
       getListCellIndex(copy, address-1)->next = getListCellIndex(copy, address+1);
+      free(temp);
       copySize--;
     }
     current = current->next;
   }
+
   addToList(t, getListIndex(copy,current->value));
+  freeList(copy);
   Cell * ans = t->next;
   free(t);
+
   return ans;
 }
